@@ -1,14 +1,14 @@
 use linkedlist::*;
 
 #[test]
-fn empty() {
+fn test_empty() {
     let empty_list = List::<i32>::new();
     assert_eq!(empty_list.len(), 0);
     assert_eq!(empty_list.get(0), None);
 }
 
 #[test]
-fn push_front() {
+fn test_push_front() {
     let empty_list = List::<i32>::new();
     let singulat_list = empty_list.push_front(123);
     assert_eq!(singulat_list.len(), 1);
@@ -16,7 +16,7 @@ fn push_front() {
 }
 
 #[test]
-fn from_slice() {
+fn test_from_slice() {
     let my_list = List::<i32>::from_slice(&[1, 2, 3]);
     assert_eq!(my_list.len(), 3);
     assert_eq!(my_list[0], 1);
@@ -26,7 +26,7 @@ fn from_slice() {
 }
 
 #[test]
-fn from_iter() {
+fn test_from_iter() {
     let my_list = List::<i32>::from_iter(vec![1, 2, 3].into_iter());
     assert_eq!(my_list.len(), 3);
     assert_eq!(my_list[0], 1);
@@ -36,7 +36,7 @@ fn from_iter() {
 }
 
 #[test]
-fn iter() {
+fn test_iter() {
     let list1 = List::<i32>::from_slice(&[1, 2, 3, 4]);
     let list2: List::<i32> = list1.into_iter().map(|x| x * x).collect();
     assert_eq!(list2.len(), 4);
@@ -47,7 +47,7 @@ fn iter() {
 }
 
 #[test]
-fn for_() {
+fn test_for() {
     let list1 = List::<i32>::from_slice(&[5, 6, 7]);
     let mut vec = Vec::<i32>::new();
     for elem in &list1 {
@@ -57,7 +57,7 @@ fn for_() {
 }
 
 #[test]
-fn overlapping() {
+fn test_overlapping() {
     let base = List::<i32>::from_slice(&[1, 2, 3]);
     let extented1 = base.push_front(4);
     let extented2 = base.push_front(5);
@@ -73,4 +73,38 @@ fn overlapping() {
     assert_eq!(extented2[1], 1);
     assert_eq!(extented2[2], 2);
     assert_eq!(extented2[3], 3);
+}
+
+#[test]
+fn test_display() {
+    let list = List::<i32>::from_slice(&[1, 2, 3]);
+    assert_eq!(list.to_string(), "[1, 2, 3]");
+}
+
+#[test]
+fn test_concat() {
+    let list1 = List::<i32>::from_slice(&[1, 2, 3]);
+    let list2 = List::<i32>::from_slice(&[4, 5, 6]);
+    let sum_list = list1.concat(&list2);
+    assert_eq!(sum_list.to_string(), "[1, 2, 3, 4, 5, 6]");
+}
+
+#[test]
+fn test_concat_to_itself() {
+    let list = List::<i32>::from_slice(&[1, 2]);
+    let sum_list = list.concat(&list);
+    assert_eq!(sum_list.to_string(), "[1, 2, 1, 2]");
+}
+
+#[test]
+fn test_reverse() {
+    let list = List::<i32>::from_slice(&[1, 2, 3]);
+    assert_eq!(list.reverse().to_string(), "[3, 2, 1]");
+}
+
+#[test]
+fn test_flat_map() {
+    let list = List::<i32>::from_slice(&[1, 2, 3]);
+    let list2 = list.flat_map(|x| List::<i32>::from_slice(&[-*x, *x]));
+    assert_eq!(list2.to_string(), "[-1, 1, -2, 2, -3, 3]");
 }

@@ -1,7 +1,10 @@
 use std::ops::Index;
 use std::sync::Arc;
 pub use std::iter::FromIterator;
+pub use std::fmt::Display;
+use std::fmt;
 
+#[derive(Debug, Clone)]
 enum Node<T> {
     Nil,
     Cons(T, Arc<Node<T>>)
@@ -42,6 +45,7 @@ fn from_iter_ref_impl<'a, T: 'a + Clone>(mut iter: impl Iterator<Item=&'a T>) ->
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct List<T> {
     head: Arc<Node<T>>
 }
@@ -107,6 +111,39 @@ impl<T> List<T> {
             Node::Cons(_, tail) => Some(List{head : tail.clone()})
         }
     }
+
+    pub fn head_and_tail(&self) -> Option<(&T, Self)> {
+        match &*self.head {
+            Node::Nil => None,
+            Node::Cons(element, tail) => Some((&element, List{head : tail.clone()}))
+        }
+    }
+}
+
+impl<T: Clone> List<T> {
+    pub fn concat(&self, rhs: &List<T>) -> List<T> {
+        if let Some((head, tail)) = self.head_and_tail() {
+            tail.concat(rhs).push_front(head.clone())
+        } else {
+            rhs.clone()
+        }
+    }
+
+    pub fn reverse(&self) -> List<T> {
+        let mut result = List::<T>::new();
+        for element in self {
+            result = result.push_front(element.clone())
+        }
+        result
+    }
+
+    pub fn flat_map<S: Clone>(&self, mut f: impl FnMut(&T) -> List<S>) -> List<S> {
+        let mut result = List::<S>::new();
+        for element in self {
+            result = result.concat(&f(element));
+        }
+        result
+    }
 }
 
 impl<T> Index<usize> for List<T> {
@@ -135,5 +172,22 @@ impl<'a, T> IntoIterator for &'a List<T> {
 
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
+    }
+}
+
+impl<T: Display> Display for List<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "[")?;
+        let mut first = true;
+        for element in self {
+            if first {
+                first = false;
+            } else {
+                write!(f, ", ")?;
+            }
+            element.fmt(f)?;
+        }
+        write!(f, "]")?;
+        Ok(())
     }
 }
