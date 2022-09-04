@@ -3,19 +3,19 @@ use std::sync::Arc;
 use std::iter::FromIterator;
 
 enum Node<T> {
-    Nil(),
+    Nil,
     Cons(T, Arc<Node<T>>)
 }
 
 fn index_impl<T>(node: &Node<T>, position: usize) -> Option<&T> {
     if position == 0 {
         match &node {
-            &Node::Nil() => None,
+            &Node::Nil => None,
             &Node::Cons(element, _) => Some(&element)
         }
     } else {
         match &node {
-            &Node::Nil() => None,
+            &Node::Nil => None,
             &Node::Cons(_, next) => index_impl(&next, position - 1)
         }
     }
@@ -23,21 +23,21 @@ fn index_impl<T>(node: &Node<T>, position: usize) -> Option<&T> {
 
 fn length_impl<T>(node: &Node<T>) -> usize {
     match &node {
-        &Node::Nil() => 0,
+        &Node::Nil => 0,
         &Node::Cons(_, next) => 1 + length_impl(&next)
     }
 }
 
 fn from_iter_impl<T>(mut iter: impl Iterator<Item=T>) -> Arc<Node<T>> {
     match iter.next() {
-        None => Arc::new(Node::Nil()),
+        None => Arc::new(Node::Nil),
         Some(element) => Arc::new(Node::Cons(element, from_iter_impl(iter)))
     }
 }
 
 fn from_iter_ref_impl<'a, T: 'a + Clone>(mut iter: impl Iterator<Item=&'a T>) -> Arc<Node<T>> {
     match &iter.next() {
-        &None => Arc::new(Node::Nil()),
+        &None => Arc::new(Node::Nil),
         &Some(element) => Arc::new(Node::Cons(element.clone(), from_iter_ref_impl(iter)))
     }
 }
@@ -65,7 +65,7 @@ impl<'a, T> Iterator for NodeIterator<'a, T> {
 
 impl<T> List<T> {
     pub fn new() -> Self {
-        List { head : Arc::new(Node::Nil()) }
+        List { head : Arc::new(Node::Nil) }
     }
 
     pub fn push_front(&self, element: T) -> Self {
@@ -92,6 +92,20 @@ impl<T> List<T> {
 
     pub fn iter(&self) -> NodeIterator<T> {
         NodeIterator { current: &*self.head }
+    }
+
+    pub fn head(&self) -> Option<&T> {
+        match &*self.head {
+            Node::Nil => None,
+            Node::Cons(element, _) => Some(&element)
+        }
+    }
+
+    pub fn tail(&self) -> Option<Self> {
+        match &*self.head {
+            Node::Nil => None,
+            Node::Cons(_, tail) => Some(List{head : tail.clone()})
+        }
     }
 }
 
